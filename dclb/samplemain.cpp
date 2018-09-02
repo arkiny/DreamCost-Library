@@ -67,8 +67,8 @@ auto main() -> int
 	}
 	std::cout << std::endl;
 
-	std::vector<int> UnsortedVectordc(20000000);
-	for (int i = 0; i < 20000000; ++i)
+	std::vector<int> UnsortedVectordc(200000000);
+	for (int i = 0; i < 200000000; ++i)
 	{
 		UnsortedVectordc.push_back(std::rand());
 	}
