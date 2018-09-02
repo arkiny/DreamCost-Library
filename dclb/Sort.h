@@ -40,7 +40,7 @@ namespace dc
 	};
 
 	template<class RandomIt, class Compare>
-	void quicksort(RandomIt lo, RandomIt hi, Compare comp)
+	constexpr void quicksort(RandomIt lo, RandomIt hi, Compare comp)
 	{
 		if (lo < hi)
 		{
@@ -53,7 +53,7 @@ namespace dc
 	}
 
 	template<class RandomIt, class Compare>
-	void siftDown(RandomIt first, RandomIt last, unsigned int start, Compare comp)
+	constexpr void siftDown(RandomIt first, RandomIt last, unsigned int start, Compare comp)
 	{
 		auto rootIndex = start;
 		auto rootItr = first+start;
@@ -91,7 +91,7 @@ namespace dc
 	}
 
 	template<class RandomIt, class Compare>
-	void heapify(RandomIt first, RandomIt last, Compare comp)
+	constexpr void heapify(RandomIt first, RandomIt last, Compare comp)
 	{
 		auto start = static_cast<long>(trunc(floor((last - first) / 2)));
 		while (start >= 0)
@@ -104,7 +104,7 @@ namespace dc
 
 
 	template<class RandomIt, class Compare>
-	void heapsort(RandomIt first, RandomIt last, Compare comp)
+	constexpr void heapsort(RandomIt first, RandomIt last, Compare comp)
 	{
 		heapify(first, last, comp);	
 		auto endIndex = last-first;
