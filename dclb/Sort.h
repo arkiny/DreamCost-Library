@@ -19,41 +19,48 @@ namespace dc
 	}
 
 	template<class RandomIt, class Compare>
-	constexpr auto partition(RandomIt lo, RandomIt hi, Compare comp)
+	constexpr void insertionSort(RandomIt arr, size_t low, size_t n, Compare comp)
 	{
-		if (lo == hi) return lo;
-
-		auto pivot = *hi;
-		auto i = lo;
-
-		for (auto j = lo; j < hi; j++)
+		for (size_t i = low + 1; i <= n; i++)
 		{
-			if (*j < pivot)
+			auto value = *(arr + i);
+			auto j = i;
+			while (j > low && comp(value, *(arr + (j - 1))))
 			{
-				dc::swap(*i, *j);
-				i++;
+				*(arr + j) = *(arr + (j - 1));
+				j--;
 			}
-		}
-
-		dc::swap(*i, *hi);
-		return i;
-	};
-
-	template<class RandomIt, class Compare>
-	constexpr void quicksort(RandomIt lo, RandomIt hi, Compare comp)
-	{
-		if (lo < hi)
-		{
-			auto pivot = dc::partition(lo, hi, comp);
-			if (lo < pivot)
-				quicksort(lo, pivot - 1, comp);
-			if (hi > pivot)
-				quicksort(pivot + 1, hi, comp);
+			*(arr + j) = value;
 		}
 	}
 
 	template<class RandomIt, class Compare>
-	constexpr void siftDown(RandomIt first, RandomIt last, unsigned int start, Compare comp)
+	constexpr auto partition(RandomIt arr, size_t start, size_t end, Compare comp)
+	{
+		auto pivot = *(arr + ((start + end) / 2));
+		auto i = start - 1;
+		auto j = end + 1;
+
+		while (true)
+		{
+			do
+			{
+				++i;
+			} while (comp(*(arr+i), pivot));
+			do
+			{
+				--j;
+			} while (comp(pivot, *(arr+j)));
+
+			if (i >= j)
+				return j;
+
+			dc::swap(*(arr+i), *(arr+j));
+		}
+	};
+
+	template<class RandomIt, class Compare>
+	constexpr void siftDown(RandomIt first, RandomIt last, size_t start, Compare comp)
 	{
 		auto rootIndex = start;
 		auto rootItr = first+start;
@@ -119,33 +126,39 @@ namespace dc
 	}
 
 	template<class RandomIt, class Compare>
-	constexpr void introsort(RandomIt lo, RandomIt hi, Compare comp, unsigned int maxdepth)
+	constexpr void introsort(RandomIt arr, size_t start, size_t end, Compare comp)
 	{
-		if (lo < hi)
-		{
-			auto pivot = dc::partition(lo, hi, comp);
+		if (start >= end) return;
 
-			if (maxdepth == 0)
+		while (start < end)
+		{
+			if (end - start < 10)
 			{
-				heapsort(lo, hi, comp);
+				dc::insertionSort(arr, start, end, comp);
+				break;
 			}
 			else
 			{
-				if (lo < pivot)
-					dc::introsort(lo, pivot - 1, comp, maxdepth - 1);
-				if (hi > pivot)
-					dc::introsort(pivot + 1, hi, comp, maxdepth - 1);
+				auto partition = dc::partition(arr, start, end, comp);
+				if (partition - start < end - partition)
+				{
+					dc::introsort(arr, start, partition, comp);
+					start = partition + 1;
+				}
+				else
+				{
+					dc::introsort(arr, partition + 1, end, comp);
+					end = partition - 1;
+				}
 			}
-		}
+		} 
 	}
 
 	template<class RandomIt, class Compare>
 	constexpr void introsort(RandomIt first, RandomIt last, Compare comp)
 	{
-		auto maxdepth = static_cast<unsigned int>(log(last - first) * 2);
-
-		// because iterator.end() is not the element of array
-		dc::introsort(first, --last, comp, maxdepth);
+		auto count = last - first;
+		dc::introsort(first, 0, count-1 , comp);
 	}
 
 	template<class RandomIt, class Compare>
@@ -169,4 +182,50 @@ namespace dc
 
 	//template< class ExecutionPolicy, class RandomIt, class Compare >
 	//void sort(ExecutionPolicy&& policy, RandomIt first, RandomIt last, Compare comp);
+
+	template<class T, class Compare>
+	constexpr size_t partition_a(T* arr, size_t start, size_t end, Compare comp)
+	{
+		auto pivot = arr[(start + end) / 2];
+		auto i = start-1;
+		auto j = end+1;
+
+		while (true)
+		{
+			do 
+			{
+				++i;
+			} while (comp(arr[i], pivot));
+			do
+			{
+				--j;
+			} while (comp(pivot, arr[j]));
+
+			if (i >= j)
+				return j;
+
+			dc::swap(arr[i], arr[j]);
+		}
+	}
+
+	template<class T, class Compare>
+	constexpr void asort(T* arr, size_t start, size_t end, Compare comp)
+	{
+		if (start >= end) return;
+		auto partition = dc::partition_a(arr, start, end, comp);
+
+		dc::asort(arr, start, partition, comp);
+		dc::asort(arr, partition+1,	end, comp);	
+	}
+
+	template<class T>
+	constexpr void asort(T* arr, size_t start, size_t end)
+	{
+		auto DefaultComparator = [](auto lhs, auto rhs)
+		{
+			return lhs < rhs;
+		};
+
+		dc::asort(arr, start, end, DefaultComparator);
+	}
 }
