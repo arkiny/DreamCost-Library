@@ -64,7 +64,6 @@ namespace dc
 	{
 		auto rootIndex = start;
 		auto rootItr = first+start;
-		//iLeftChild(i) = 2 * i + 1
 		auto leftChildIndex = 2 * rootIndex + 1;
 		auto end = static_cast<unsigned int>(last - first);
 
@@ -176,6 +175,7 @@ namespace dc
 		};
 		dc::sort(first, last, DefaultComparator);
 	}
+
 	// Don't care execution poliycy for now
 	//template< class ExecutionPolicy, class RandomIt >
 	//void sort(ExecutionPolicy&& policy, RandomIt first, RandomIt last);
