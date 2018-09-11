@@ -46,16 +46,16 @@ namespace dc
 			do
 			{
 				++i;
-			} while (comp(*(arr+i), pivot));
+			} while (comp(*(arr + i), pivot));
 			do
 			{
 				--j;
-			} while (comp(pivot, *(arr+j)));
+			} while (comp(pivot, *(arr + j)));
 
 			if (i >= j)
 				return j;
 
-			dc::swap(*(arr+i), *(arr+j));
+			dc::swap(*(arr + i), *(arr + j));
 		}
 	};
 
@@ -63,7 +63,7 @@ namespace dc
 	constexpr void siftDown(RandomIt first, RandomIt last, size_t start, Compare comp)
 	{
 		auto rootIndex = start;
-		auto rootItr = first+start;
+		auto rootItr = first + start;
 		auto leftChildIndex = 2 * rootIndex + 1;
 		auto end = static_cast<unsigned int>(last - first);
 
@@ -73,11 +73,11 @@ namespace dc
 			rootItr = first + rootIndex;
 			RandomIt leftChildItr = first + leftChildIndex;
 
-			if (comp(*(first+swapIndex), *leftChildItr))
+			if (comp(*(first + swapIndex), *leftChildItr))
 			{
 				swapIndex = leftChildIndex;
 			}
-			if (leftChildIndex + 1 <= end 
+			if (leftChildIndex + 1 <= end
 				&& comp(*(first + swapIndex), *(leftChildItr + 1)))
 			{
 				swapIndex = leftChildIndex + 1;
@@ -86,7 +86,7 @@ namespace dc
 			if (swapIndex == rootIndex)
 			{
 				return;
-			}				
+			}
 			else
 			{
 				dc::swap(*rootItr, *(first + swapIndex));
@@ -112,58 +112,98 @@ namespace dc
 	template<class RandomIt, class Compare>
 	constexpr void heapsort(RandomIt first, RandomIt last, Compare comp)
 	{
-		heapify(first, last, comp);	
-		auto endIndex = last-first;
+		heapify(first, last, comp);
+		auto endIndex = last - first;
 
 		while (endIndex > 0)
 		{
-			dc::swap(*(first+endIndex), *first);
+			dc::swap(*(first + endIndex), *first);
 
 			endIndex--;
-			siftDown(first, (first+endIndex), 0, comp);
+			siftDown(first, (first + endIndex), 0, comp);
 		}
 	}
 
 	template<class RandomIt, class Compare>
-	constexpr void introsort(RandomIt arr, size_t start, size_t end, Compare comp)
+	constexpr void hybridsort(RandomIt arr, size_t start, size_t end, /*size_t maxdepth,*/ Compare comp)
 	{
-		if (start >= end) return;
-
-		while (start < end)
+		if (start < end)
 		{
-			if (end - start < 10)
+			if (end - start < 55)
 			{
-				dc::insertionSort(arr, start, end, comp);
-				break;
+				for (size_t i = start + 1; i <= end; i++)
+				{
+					auto value = *(arr + i);
+					auto j = i;
+					while (j > start && comp(value, *(arr + (j - 1))))
+					{
+						*(arr + j) = *(arr + (j - 1));
+						j--;
+					}
+					*(arr + j) = value;
+				}
 			}
+			//else if (maxdepth == 0)
+			//{
+			//	dc::heapsort(arr, arr + end, comp);
+			//}
 			else
 			{
-				auto partition = dc::partition(arr, start, end, comp);
-				if (partition - start < end - partition)
+				auto midind = ((start + end) >> 1);
+
+				// med of three
+				if (comp(*arr, *(arr + midind))) dc::swap(*arr, *(arr + midind));
+				if (comp(*arr, *(arr + end))) dc::swap(*arr, *(arr + end));
+				if (comp(*(arr + midind), *(arr + end))) dc::swap(*(arr + midind), *(arr + end));
+			
+				auto pivot = *(arr + midind);
+
+
+				auto i = start - 1;
+				auto j = end + 1;
+
+				while (true)
 				{
-					dc::introsort(arr, start, partition, comp);
-					start = partition + 1;
+					do
+					{
+						++i;
+					} while (comp(*(arr + i), pivot));
+					do
+					{
+						--j;
+					} while (comp(pivot, *(arr + j)));
+
+					if (i >= j)
+					{
+						break;
+					}
+
+					dc::swap(*(arr + i), *(arr + j));
 				}
-				else
-				{
-					dc::introsort(arr, partition + 1, end, comp);
-					end = partition - 1;
-				}
+
+				auto partition = j;
+
+				dc::hybridsort(arr, start, partition, /*maxdepth - 1,*/ comp);
+				dc::hybridsort(arr, partition + 1, end, /*maxdepth - 1,*/ comp);
 			}
-		} 
+		}
+
 	}
 
-	template<class RandomIt, class Compare>
-	constexpr void introsort(RandomIt first, RandomIt last, Compare comp)
-	{
-		auto count = last - first;
-		dc::introsort(first, 0, count-1 , comp);
-	}
+	//template<class RandomIt, class Compare>
+	//constexpr void hybridsort(RandomIt first, RandomIt last, Compare comp)
+	//{
+	//	auto count = last - first;
+	//	//auto md = static_cast<size_t>(log(count)) * 2;
+	//	dc::hybridsort(first, 0, count - 1, /*md,*/ comp);
+	//}
 
 	template<class RandomIt, class Compare>
 	constexpr void sort(RandomIt first, RandomIt last, Compare comp)
 	{
-		dc::introsort(first, last, comp);
+		auto count = last - first;
+		//auto md = static_cast<size_t>(log(count)) * 2;
+		dc::hybridsort(first, 0, count - 1, /*md,*/ comp);
 	}
 
 	template<class RandomIt>
@@ -183,49 +223,49 @@ namespace dc
 	//template< class ExecutionPolicy, class RandomIt, class Compare >
 	//void sort(ExecutionPolicy&& policy, RandomIt first, RandomIt last, Compare comp);
 
-	template<class T, class Compare>
-	constexpr size_t partition_a(T* arr, size_t start, size_t end, Compare comp)
-	{
-		auto pivot = arr[(start + end) / 2];
-		auto i = start-1;
-		auto j = end+1;
+	//template<class T, class Compare>
+	//constexpr size_t partition_a(T* arr, size_t start, size_t end, Compare comp)
+	//{
+	//	auto pivot = arr[(start + end) / 2];
+	//	auto i = start-1;
+	//	auto j = end+1;
 
-		while (true)
-		{
-			do 
-			{
-				++i;
-			} while (comp(arr[i], pivot));
-			do
-			{
-				--j;
-			} while (comp(pivot, arr[j]));
+	//	while (true)
+	//	{
+	//		do 
+	//		{
+	//			++i;
+	//		} while (comp(arr[i], pivot));
+	//		do
+	//		{
+	//			--j;
+	//		} while (comp(pivot, arr[j]));
 
-			if (i >= j)
-				return j;
+	//		if (i >= j)
+	//			return j;
 
-			dc::swap(arr[i], arr[j]);
-		}
-	}
+	//		dc::swap(arr[i], arr[j]);
+	//	}
+	//}
 
-	template<class T, class Compare>
-	constexpr void asort(T* arr, size_t start, size_t end, Compare comp)
-	{
-		if (start >= end) return;
-		auto partition = dc::partition_a(arr, start, end, comp);
+	//template<class T, class Compare>
+	//constexpr void asort(T* arr, size_t start, size_t end, Compare comp)
+	//{
+	//	if (start >= end) return;
+	//	auto partition = dc::partition_a(arr, start, end, comp);
 
-		dc::asort(arr, start, partition, comp);
-		dc::asort(arr, partition+1,	end, comp);	
-	}
+	//	dc::asort(arr, start, partition, comp);
+	//	dc::asort(arr, partition+1,	end, comp);	
+	//}
 
-	template<class T>
-	constexpr void asort(T* arr, size_t start, size_t end)
-	{
-		auto DefaultComparator = [](auto lhs, auto rhs)
-		{
-			return lhs < rhs;
-		};
+	//template<class T>
+	//constexpr void asort(T* arr, size_t start, size_t end)
+	//{
+	//	auto DefaultComparator = [](auto lhs, auto rhs)
+	//	{
+	//		return lhs < rhs;
+	//	};
 
-		dc::asort(arr, start, end, DefaultComparator);
-	}
+	//	dc::asort(arr, start, end, DefaultComparator);
+	//}
 }
